@@ -1,10 +1,11 @@
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
-var mime = require('mime');
+var mime = require('mime-types');
 var cache = {};
+var chatServer = require('./chat_server.js');
 
-var server = http.createServer((request, response) {
+var server = http.createServer(function(request, response) {
     var filePath = false;
 
     if (request.url == '/') {
@@ -15,6 +16,8 @@ var server = http.createServer((request, response) {
     var absPath = './' + filePath;
     serveStatic(response, cache, absPath);
 });
+
+chatServer.listen(server);
 
 server.listen(3000, function() {
     console.log('Server listening on 3000');
@@ -27,12 +30,12 @@ function send404(response) {
 }
 
 function sendFile(response, filePath, fileContents) {
-    response.writeHead(200,{"content-type": MimeType.lookup(path.basename(filePath))});
+    response.writeHead(200,{"content-type": mime.lookup(path.basename(filePath))});
     response.end(fileContents);
 }
 
 function serveStatic(response, cache, absPath) {
-    if (cache(absPath)) {
+    if (cache[absPath]) {
         sendFile(response, absPath, cache[absPath]);
     } else {
         fs.exists(absPath, function(exists) {
