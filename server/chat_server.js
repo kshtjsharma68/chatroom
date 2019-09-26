@@ -7,7 +7,7 @@ var currentRoom = {};
 
 exports.listen = function(server) {
 	io = socketio.listen(server);
-
+console.log('working inside server io');
 	io.set('log level', 1);
 
 	io.sockets.on('connection', function(socket) {
