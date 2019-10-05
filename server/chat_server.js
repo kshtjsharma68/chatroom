@@ -8,19 +8,22 @@ var currentRoom = {};
 exports.listen = function(server) {
 	io = socketio.listen(server);
 console.log('working inside server io');
-	io.set('log level', 1);
+	//io.set('log level', 1);
 
 	io.sockets.on('connection', function(socket) {
 		guestNumber = assignGuestName(socket, guestNumber, nickNames, namesUsed);
 
-		joinRomm(socket, 'Lobby');
+		joinRoom(socket, 'Lobby');
 
 		handleMessageBroadcasting(socket, nickNames, namesUsed);
+
+		handleNameChangeAttempts(socket, nickNames, namesUsed);
 
 		handleRoomJoining(socket);
 
 		socket.on('rooms', function() {
-			socket.emit('rooms', io.sockets.manager.rooms);
+			socket.emit('rooms', io.of('/').adapter.rooms);
+			//socket.emit('rooms', io.sockets.manager.rooms);
 		});
 
 		handleClientDisconnection(socket, nickNames, namesUsed);
@@ -40,7 +43,7 @@ var assignGuestName = (socket, guestNumber, nickNames, namesUsed) => {
 	return guestNumber + 1;
 }
 
-var joinRomm = (socket, room) => {
+var joinRoom = (socket, room) => {
 	socket.join(room);
 	currentRoom[socket.id] = room;
 	socket.emit('joinResult',{room: room});
@@ -48,7 +51,8 @@ var joinRomm = (socket, room) => {
 		text: `${nickNames[socket.id]} has Joined ${room} .`
 	});
 
-	var usersInRoom = io.sockets.clients(room);
+	var usersInRoom = io.of('/').in(room).clients;
+
 	if (usersInRoom.length > 1) {
 		var usersInRoomSummary = `Users currently in ${room} :`;
 		for( let index in usersInRoom )  {

@@ -1,13 +1,15 @@
 var http = require('http');
 var fs = require('fs');
 var path = require('path');
+var chatserver = require('./server/chat_server');
+
 
 var mime = require('mime-types');
 var cache = {};
 
 var server = http.createServer(function(request, response) {
     var filePath = false;
-console.log(request.url)
+console.log('url destined',request.url)
     if (request.url == '/') {
         filePath = 'lib/index.html';
     } else {
@@ -16,6 +18,8 @@ console.log(request.url)
     var absPath = './' + filePath;
     serveStatic(response, cache, absPath);
 });
+
+chatserver.listen(server);
 
 server.listen(3000, function() {
     console.log('Server listening on 3000');
